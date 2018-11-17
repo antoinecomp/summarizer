@@ -53,12 +53,12 @@ if image_path.endswith('.pdf'):
 file_names = glob.glob("out*")
 file_names= sorted(file_names)
 
+### Attempt of group algorithm
 # we get the dominant colors
 img = cv2.imread('strike.png')
 height, width, dim = img.shape
-print("height, width, dim", height, width, dim)
 # We take only the center of the image
-img = img[(height/4):(3*height/4), (width/4):(3*width/4), :]
+img = img[int(height/4):int(3*height/4), int(width/4):int(3*width/4), :]
 height, width, dim = img.shape
 
 img_vec = np.reshape(img, [height * width, dim] )
@@ -77,10 +77,11 @@ x_from = 0.05
 
 for cluster_center in kmeans.cluster_centers_[sort_ix]:
     ax.add_patch(patches.Rectangle( (x_from, 0.05), 0.29, 0.9, alpha=None,
-                                    facecolor='#%02x%02x%02x' % (cluster_center[2], cluster_center[1], cluster_center[0] ) ) )
+                                    facecolor='#%02x%02x%02x' % (int(cluster_center[2]), int(cluster_center[1]), int(cluster_center[0]) ) ) )
     x_from = x_from + 0.31
 
-plt.show()
+# plt.show()
+### End of attempt
 
 for file_name in file_names:
 	print("we wrote : ",file_name)
@@ -105,9 +106,8 @@ for file_name in file_names:
 	cv2.imwrite(filename, gray)
 	
 	# Here we should split the images in parts. Those who have strokes
-	# We should ask for a stroke example so we have its color 
-
-	# We store the text on either side of the shape we recognized
+	# We asked for a stroke example so we have its color 
+	# While we find shape with the same color we store all the full line of pixels
 	
 	
 	
