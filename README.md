@@ -19,4 +19,4 @@ Du fait de l'énorme bulle immobilière spéculative des dernières décennies, 
 
 # Inspiration
 
-As I want to distinguish shape versus text in hand-drawn strokes [Using Entropy to Distinguish Shape Versus Text in Hand-Drawn Diagrams][https://www.ijcai.org/Proceedings/09/Papers/234.pdf] rose my interest. Yet it doesn't tell what the grouping algorithm they use to group only strokes which are a part of the drawings or the letter.
+As I want to distinguish shape versus text in hand-drawn strokes [Using Entropy to Distinguish Shape Versus Text in Hand-Drawn Diagrams](https://www.ijcai.org/Proceedings/09/Papers/234.pdf) rose my interest. Yet it doesn't tell what the grouping algorithm they use to group only strokes which are a part of the drawings or the letter.
