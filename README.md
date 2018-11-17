@@ -16,6 +16,10 @@ Les processus de renforcement des ségrégations concernent aujourd'hui l'ensemb
 Du fait de l'énorme bulle immobilière spéculative des dernières décennies, qui touche en particulier Paris et une partie de la première couronne, mais qui se répercute mécaniquement sur l'ensemble de l'espace régional
 ```
 
+# To-do
+
+implement the grouping algorithm that would group and seperate strokes and text
+
 
 # Inspiration
 
