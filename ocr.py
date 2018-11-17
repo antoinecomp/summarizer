@@ -56,7 +56,17 @@ file_names= sorted(file_names)
 # we get the dominant colors
 img = cv2.imread('strike.png')
 height, width, dim = img.shape
+print("height, width, dim", height, width, dim)
+# We take only the center of the image
+img = img[(height/4):(3*height/4), (width/4):(3*width/4), :]
+height, width, dim = img.shape
 
+img_vec = np.reshape(img, [height * width, dim] )
+
+kmeans = KMeans(n_clusters=3)
+kmeans.fit( img_vec )
+
+#  count cluster pixels, order clusters by cluster size
 unique_l, counts_l = np.unique(kmeans.labels_, return_counts=True)
 sort_ix = np.argsort(counts_l)
 sort_ix = sort_ix[::-1]
