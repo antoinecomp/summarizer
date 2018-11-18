@@ -1,0 +1,74 @@
+I want to crop lines of an image that contains specific colors.
+
+I already have the following line of code to get the color of an image with a stroke.
+
+    # we get the dominant colors
+    img = cv2.imread('stroke.png')
+    height, width, dim = img.shape
+    # We take only the center of the image
+    img = img[int(height/4):int(3*height/4), int(width/4):int(3*width/4), :]
+    height, width, dim = img.shape
+    
+    img_vec = np.reshape(img, [height * width, dim] )
+    
+    kmeans = KMeans(n_clusters=3)
+    kmeans.fit( img_vec )
+    
+    #  count cluster pixels, order clusters by cluster size
+    unique_l, counts_l = np.unique(kmeans.labels_, return_counts=True)
+    sort_ix = np.argsort(counts_l)
+    sort_ix = sort_ix[::-1]
+    
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    x_from = 0.05
+    
+    # colors are cluster_center in kmeans.cluster_centers_[sort_ix] I think
+
+Then I want to parse every lines of the images I have, crop together the lines that have a continuous pencil stroke in the margin. That is, the lines where there is at least one pixel with one of the colors of example `stroke.png`, white being excluded (something I didn't implemented yet). And finally extract text from these lines.
+
+    for file_name in file_names:
+    	print("we wrote : ",file_name)
+    	# load the image and convert it to grayscale
+    	image = cv2.imread(file_name)
+    	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    	# check to see if we should apply thresholding to preprocess the
+    	# image
+    	if args["preprocess"] == "thresh":
+    		gray = cv2.threshold(gray, 0, 255,
+    			cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+    
+    	# make a check to see if median blurring should be done to remove
+    	# noise
+    	elif args["preprocess"] == "blur":
+    		gray = cv2.medianBlur(gray, 3)
+    
+    	# write the grayscale image to disk as a temporary file so we can
+    	# apply OCR to it
+    	filename = "{}.png".format(os.getpid())
+    	cv2.imwrite(filename, gray)
+    	
+    	# Here we should split the images in parts. Those who have strokes
+    	# We asked for a stroke example so we have its color 
+    	# While we find shape with the same color we store all the full line of pixels
+    	
+    
+    	# load the image as a PIL/Pillow image, apply OCR, and then delete
+    	# the temporary file
+    	text = pytesseract.image_to_string(Image.open(filename))
+    	os.remove(filename)
+    	#print(text)
+    
+    	with open('resume.txt', 'a+') as f:
+    		print('***:', text, file=f)  
+
+# Annex
+
+Another idea developed by this paper is to group strokes and recognize text sparately but I don't know any group algorithm that would help me make this job yet.
+
+An example of an image being processed :
+
+An example of a pencil stroke.
+
+The full project can be found on Github.

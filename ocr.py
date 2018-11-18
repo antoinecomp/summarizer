@@ -34,6 +34,9 @@ def pdfspliterimager(filename):
 			page.save('out%s.jpg'%i, 'JPEG')
 		
 		os.remove("document-page%s.pdf" % i)
+		
+# variables 
+start = -1
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -53,7 +56,7 @@ if image_path.endswith('.pdf'):
 file_names = glob.glob("out*")
 file_names= sorted(file_names)
 
-### Attempt of group algorithm
+### Attempt to get the colors of the stroke example
 # we get the dominant colors
 img = cv2.imread('strike.png')
 height, width, dim = img.shape
@@ -63,7 +66,7 @@ height, width, dim = img.shape
 
 img_vec = np.reshape(img, [height * width, dim] )
 
-kmeans = KMeans(n_clusters=3)
+kmeans = KMeans(n_clusters=2)
 kmeans.fit( img_vec )
 
 #  count cluster pixels, order clusters by cluster size
@@ -75,10 +78,7 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 x_from = 0.05
 
-for cluster_center in kmeans.cluster_centers_[sort_ix]:
-    ax.add_patch(patches.Rectangle( (x_from, 0.05), 0.29, 0.9, alpha=None,
-                                    facecolor='#%02x%02x%02x' % (int(cluster_center[2]), int(cluster_center[1]), int(cluster_center[0]) ) ) )
-    x_from = x_from + 0.31
+cluster_center = kmeans.cluster_centers_[sort_ix][1]
 
 # plt.show()
 ### End of attempt
@@ -107,8 +107,35 @@ for file_name in file_names:
 	
 	# Here we should split the images in parts. Those who have strokes
 	# We asked for a stroke example so we have its color 
-	# While we find shape with the same color we store all the full line of pixels
-	
+	# While we find pixels with the same color we store its line
+	im = Image.open(filename)
+	(width, height)= im.size
+	for x in range(width): 
+		for y in range(height):
+			rgb_im = im.convert('RGB')
+			red, green, blue = rgb_im.getpixel((1, 1))
+			# We test if the pixel has the same color as the second cluster # We should rather test if it is "alike"
+			# It means that we found a line were there is some paper stroke
+			if np.array_equal([red,green,blue],cluster_center): 
+				# if it is the case we store the width as starting point while we find pixels 
+				# and we break the loop to go to another line
+				if start == -1:
+					start = x
+					selecting_area = True
+					break
+				# if it already started we break the loop to go to another line
+				if selecting_area == True:
+					break
+			# if no pixel in a line had the same color as the second cluster but selecting already started
+			# we crop the image and go to another line
+			# it means that there is no more paper stroke
+			if selecting_area == True:
+				text_box = (0, start, width, x)
+				# Crop Image
+				area = im.crop(text_box)
+				area.show()	
+				break
+		    
 	
 	
 	# Or we can group strokes and recognize text
