@@ -58,8 +58,8 @@ def erode( img, kern_size = 3 ):
 def prep( img, kern_size = 3 ):    
     img = erode( img, kern_size )
     retval, img = cv2.threshold(img, 200.0, 255.0, cv2.THRESH_BINARY_INV) #   invert colors for findContours
-    cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE) # Find Contours of Image
+     
+    return cv2.findContours(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), cv2.RETR_LIST, cv2.CHAIN_APPROX_NONE) # Find Contours of Image
 	
 # given img & number of desired blobs, returns contours of blobs.
 def blobbify(img, num_of_labels, kern_size = 3, dilation_rate = 10):
@@ -130,7 +130,8 @@ for file_name in file_names:
 	img = erode( img, kern_size = 3 )
 	contours = prep( img, kern_size = 3 )
 	# blobbify(img, num_of_labels, kern_size = 3, dilation_rate = 10)
-	print(bounding_box(contours))
+	box = bounding_box(contours)
+	print(box)
 
 
 
