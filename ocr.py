@@ -36,6 +36,7 @@ def pdfspliterimager(filename):
 		os.remove("document-page%s.pdf" % i)
 		
 
+
 # removes pixels in image that are between the range of
 # [lower_val,upper_val]
 def remove_gray(img,lower_val,upper_val):
@@ -45,10 +46,19 @@ def remove_gray(img,lower_val,upper_val):
     mask = cv2.inRange(gray, lower_bound, upper_bound)
     return cv2.bitwise_and(gray, gray, mask = mask)
 	
+# erodes image based on given kernel size (erosion = expands black areas)
+def erode( img, kern_size = 3 ):
+    retval, img = cv2.threshold(img, 254.0, 255.0, cv2.THRESH_BINARY) # threshold to deal with only black and white.
+    kern = np.ones((kern_size,kern_size),np.uint8) # make a kernel for erosion based on given kernel size.
+    eroded = cv2.erode(img, kern, 1) # erode your image to blobbify black areas
+    [y,x,z] = eroded.shape # get shape of image to make a white boarder around image of 1px, to avoid problems with find contours.
+    return cv2.rectangle(eroded, (0,0), (x,y), (255,255,255), 1)
+	
 # finds contours of eroded image
 def prep( img, kern_size = 3 ):    
     img = erode( img, kern_size )
     retval, img = cv2.threshold(img, 200.0, 255.0, cv2.THRESH_BINARY_INV) #   invert colors for findContours
+    cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     return cv2.findContours(img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE) # Find Contours of Image
 	
 # given img & number of desired blobs, returns contours of blobs.
@@ -73,6 +83,8 @@ def bounding_box(contours):
 		
 # variables 
 start = -1
+num_of_labels = [] #meta data for each image
+
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -92,38 +104,11 @@ if image_path.endswith('.pdf'):
 file_names = glob.glob("out*")
 file_names= sorted(file_names)
 
-### Attempt to get the colors of the stroke example
-# we get the dominant colors
-img = cv2.imread('strike.png')
-height, width, dim = img.shape
-# We take only the center of the image
-img = img[int(height/4):int(3*height/4), int(width/4):int(3*width/4), :]
-height, width, dim = img.shape
-
-img_vec = np.reshape(img, [height * width, dim] )
-
-kmeans = KMeans(n_clusters=2)
-kmeans.fit( img_vec )
-
-#  count cluster pixels, order clusters by cluster size
-unique_l, counts_l = np.unique(kmeans.labels_, return_counts=True)
-sort_ix = np.argsort(counts_l)
-sort_ix = sort_ix[::-1]
-
-fig = plt.figure()
-ax = fig.add_subplot(111)
-x_from = 0.05
-
-cluster_center = kmeans.cluster_centers_[sort_ix][1]
-
-# plt.show()
-### End of attempt
-
 for file_name in file_names:
 	print("we wrote : ",file_name)
 	# load the image and convert it to grayscale
-	image = cv2.imread(file_name)
-	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+	img = cv2.imread(file_name)
+	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 	# check to see if we should apply thresholding to preprocess the
 	# image
@@ -139,55 +124,13 @@ for file_name in file_names:
 	# write the grayscale image to disk as a temporary file so we can
 	# apply OCR to it
 	filename = "{}.png".format(os.getpid())
-	cv2.imwrite(filename, gray)
+	cv2.imwrite(filename, gray) 
 	
-	'''
-	# Here we should split the images in parts. Those who have strokes
-	# We asked for a stroke example so we have its color 
-	# While we find pixels with the same color we store its line
-	selecting_area = False
-	im = Image.open(filename)
-	(width, height)= im.size
-	for x in range(width): 
-		for y in range(height):
-			rgb_im = im.convert('RGB')
-			red, green, blue = rgb_im.getpixel((1, 1))
-			# We test if the pixel has the same color as the second cluster # We should rather test if it is "alike"
-			# It means that we found a line were there is some paper stroke
-			if np.array_equal([red,green,blue],cluster_center): 
-				# if it is the case we store the width as starting point while we find pixels 
-				# and we break the loop to go to another line
-				if start == -1:
-					start = x
-					selecting_area = True
-					break
-				# if it already started we break the loop to go to another line
-				if selecting_area == True:
-					break
-			# if no pixel in a line had the same color as the second cluster but selecting already started
-			# we crop the image and go to another line
-			# it means that there is no more paper stroke
-			if selecting_area == True:
-				text_box = (0, start, width, x)
-				# Crop Image
-				area = im.crop(text_box)
-				area.show()	
-				break
-	'''
-		    
-	
-	
-	# Or we can group strokes and recognize text
-
-	# load the image as a PIL/Pillow image, apply OCR, and then delete
-	# the temporary file
-	text = pytesseract.image_to_string(Image.open(filename))
-	os.remove(filename)
-	#print(text)
-
-	with open('resume.txt', 'a+') as f:
-		print('***:', text, file=f)  
-		
+	### Prijatelj
+	img = erode( img, kern_size = 3 )
+	contours = prep( img, kern_size = 3 )
+	# blobbify(img, num_of_labels, kern_size = 3, dilation_rate = 10)
+	print(bounding_box(contours))
 
 
 
