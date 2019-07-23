@@ -12,14 +12,13 @@ import sys
 from pdf2image import convert_from_path
 # import all files with a name
 import glob
-# To import the dominant colors
+# to import the dominant colors
 from sklearn.cluster import KMeans
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-
-
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe"
 
 # functions
 def pdfspliterimager(filename):
@@ -34,7 +33,7 @@ def pdfspliterimager(filename):
 			page.save('out%s.jpg'%i, 'JPEG')
 		
 		os.remove("document-page%s.pdf" % i)
-		
+
 # variables 
 start = -1
 
@@ -58,27 +57,28 @@ file_names= sorted(file_names)
 
 ### Attempt to get the colors of the stroke example
 # we get the dominant colors
-img = cv2.imread('strike.png')
-height, width, dim = img.shape
+#img = cv2.imread('strike.png')
+#height, width, dim = img.shape
 # We take only the center of the image
-img = img[int(height/4):int(3*height/4), int(width/4):int(3*width/4), :]
-height, width, dim = img.shape
+#img = img[int(height/4):int(3*height/4), int(width/4):int(3*width/4), :]
+#height, width, dim = img.shape
 
-img_vec = np.reshape(img, [height * width, dim] )
+#img_vec = np.reshape(img, [height * width, dim] )
 
-kmeans = KMeans(n_clusters=2)
-kmeans.fit( img_vec )
+#kmeans = KMeans(n_clusters=2)
+#kmeans.fit( img_vec )
 
 #  count cluster pixels, order clusters by cluster size
-unique_l, counts_l = np.unique(kmeans.labels_, return_counts=True)
-sort_ix = np.argsort(counts_l)
-sort_ix = sort_ix[::-1]
+#unique_l, counts_l = np.unique(kmeans.labels_, return_counts=True)
+#sort_ix = np.argsort(counts_l)
+#sort_ix = sort_ix[::-1]
 
-fig = plt.figure()
-ax = fig.add_subplot(111)
-x_from = 0.05
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+#x_from = 0.05
 
-cluster_center = kmeans.cluster_centers_[sort_ix][1]
+# what is this ?
+#cluster_center = kmeans.cluster_centers_[sort_ix][1]
 
 # plt.show()
 ### End of attempt
@@ -105,7 +105,7 @@ for file_name in file_names:
 	filename = "{}.png".format(os.getpid())
 	cv2.imwrite(filename, gray)
 	
-	# Here we should split the images in parts. Those who have strokes
+	# Here we should split the images in two parts : those who has strokes and those who don t
 	# We asked for a stroke example so we have its color 
 	# While we find pixels with the same color we store its line
 	im = Image.open(filename)
